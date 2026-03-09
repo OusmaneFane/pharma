@@ -92,6 +92,27 @@ export default function ClientOrderShow({
           </div>
         </div>
 
+        {order.pickup_code && (
+          <Card className="border-0 bg-emerald-50/60 shadow-md shadow-emerald-100 ring-1 ring-emerald-100">
+            <CardContent className="flex flex-col gap-2 p-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wider text-emerald-700">
+                  Code de retrait
+                </p>
+                <p className="font-mono text-lg font-bold text-emerald-900">
+                  {order.pickup_code}
+                </p>
+                <p className="mt-1 text-xs text-emerald-700/80">
+                  Présentez ce code à la pharmacie pour récupérer votre commande.
+                </p>
+              </div>
+              <p className="mt-2 text-xs text-emerald-700/80 sm:mt-0">
+                Ne partagez ce code qu&apos;avec le personnel de la pharmacie.
+              </p>
+            </CardContent>
+          </Card>
+        )}
+
         <div className="grid gap-6 sm:grid-cols-2">
           <Card className="overflow-hidden border-0 bg-white shadow-lg shadow-slate-200/50 ring-1 ring-slate-200/60">
             <CardHeader className="border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white px-6 py-4">

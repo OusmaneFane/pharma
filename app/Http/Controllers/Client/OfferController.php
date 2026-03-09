@@ -63,6 +63,7 @@ class OfferController extends Controller
             'chosen_offer_id' => $offer->id,
             'total_amount' => $offer->total_price + $offer->delivery_fee + $offer->service_fee,
             'status' => Order::STATUS_ACCEPTED,
+            'pickup_code' => $order->pickup_code ?: (string) random_int(100000, 999999),
         ]);
 
         return redirect()

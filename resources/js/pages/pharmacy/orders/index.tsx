@@ -1,8 +1,19 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
+import { useState } from 'react';
 import { Package, Clock, CheckCircle2, User } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import PharmacyLayout from '@/layouts/pharmacy-layout';
 import type { Order } from '@/types';
 
@@ -71,6 +82,41 @@ export default function PharmacyOrdersIndex({
   const list = orders?.data ?? [];
   const hasPages = orders?.last_page > 1;
   const links = orders?.links ?? [];
+
+  const [pickupModalOrderId, setPickupModalOrderId] = useState<number | null>(null);
+  const [pickupCode, setPickupCode] = useState('');
+  const [pickupError, setPickupError] = useState<string | null>(null);
+  const [pickupSubmitting, setPickupSubmitting] = useState(false);
+
+  const handlePickupSubmit = () => {
+    if (!pickupModalOrderId) return;
+    if (!pickupCode.trim()) {
+      setPickupError('Veuillez entrer le code de retrait.');
+      return;
+    }
+
+    setPickupSubmitting(true);
+    setPickupError(null);
+
+    router.post(
+      `/pharmacy/orders/${pickupModalOrderId}/complete`,
+      { pickup_code: pickupCode.trim() },
+      {
+        preserveScroll: true,
+        onError: (errors) => {
+          if (errors.pickup_code) {
+            setPickupError(errors.pickup_code as string);
+          }
+        },
+        onSuccess: () => {
+          setPickupModalOrderId(null);
+          setPickupCode('');
+          setPickupError(null);
+        },
+        onFinish: () => setPickupSubmitting(false),
+      }
+    );
+  };
 
   return (
     <PharmacyLayout title="Commandes">
@@ -156,13 +202,26 @@ export default function PharmacyOrdersIndex({
                             : '—'}
                         </td>
                         <td className="px-6 py-4 text-slate-500">{formatDate(order.created_at)}</td>
-                        <td className="px-6 py-4">
+                        <td className="px-6 py-4 space-x-3">
                           <Link
                             href={`/pharmacy/requests/${order.id}`}
                             className="text-emerald-600 font-medium hover:underline"
                           >
-                            Voir détail
+                            Détail
                           </Link>
+                          {order.status !== 'completed' && order.status !== 'cancelled' && (
+                            <button
+                              type="button"
+                              className="text-xs font-semibold text-emerald-700 hover:underline"
+                              onClick={() => {
+                                setPickupModalOrderId(order.id);
+                                setPickupCode('');
+                                setPickupError(null);
+                              }}
+                            >
+                              Marquer retirée
+                            </button>
+                          )}
                         </td>
                       </tr>
                     ))}
@@ -198,6 +257,54 @@ export default function PharmacyOrdersIndex({
           )}
         </CardContent>
       </Card>
+      <Dialog
+        open={pickupModalOrderId !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setPickupModalOrderId(null);
+            setPickupCode('');
+            setPickupError(null);
+          }
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirmer le retrait</DialogTitle>
+            <DialogDescription>
+              Saisissez le code de retrait communiqué par le client pour marquer la commande comme
+              terminée.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label htmlFor="pickup_code">Code de retrait</Label>
+            <Input
+              id="pickup_code"
+              value={pickupCode}
+              onChange={(e) => setPickupCode(e.target.value)}
+              autoComplete="one-time-code"
+              autoFocus
+            />
+            {pickupError && <p className="text-sm text-destructive">{pickupError}</p>}
+          </div>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setPickupModalOrderId(null);
+                setPickupCode('');
+                setPickupError(null);
+              }}
+              disabled={pickupSubmitting}
+            >
+              Annuler
+            </Button>
+            <Button type="button" onClick={handlePickupSubmit} disabled={pickupSubmitting}>
+              {pickupSubmitting ? 'Validation…' : 'Marquer comme retirée'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </PharmacyLayout>
   );
 }

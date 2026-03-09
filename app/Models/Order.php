@@ -28,6 +28,8 @@ class Order extends Model
         'urgency',
         'chosen_offer_id',
         'total_amount',
+        'pickup_code',
+        'pickup_confirmed_at',
         'expires_at',
     ];
 
@@ -38,6 +40,7 @@ class Order extends Model
             'accepts_substitution' => 'boolean',
             'accepts_partial' => 'boolean',
             'expires_at' => 'datetime',
+            'pickup_confirmed_at' => 'datetime',
         ];
     }
 

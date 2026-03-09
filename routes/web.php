@@ -44,6 +44,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/requests/{order}/offer', [PharmacyRequestController::class, 'storeOffer'])->name('requests.offer');
         Route::post('/requests/{order}/messages', [MessageController::class, 'store'])->name('requests.messages.store');
         Route::get('/orders', [PharmacyOrderController::class, 'index'])->name('orders.index');
+        Route::post('/orders/{order}/complete', [PharmacyOrderController::class, 'complete'])->name('orders.complete');
         Route::inertia('/profile', 'pharmacy/profile')->name('profile');
     });
 

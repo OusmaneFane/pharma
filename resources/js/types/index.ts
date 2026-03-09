@@ -76,6 +76,8 @@ export interface Order {
   urgency: Urgency;
   chosen_offer_id?: number | null;
   total_amount?: number | null;
+  pickup_code?: string | null;
+  pickup_confirmed_at?: string | null;
   expires_at?: string | null;
   created_at: string;
   updated_at: string;
